@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  node-app:
+    build: .
+    container_name: api_container
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    env_file:
+      - .env_local
+    restart: always
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./package.json
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_api_container
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
